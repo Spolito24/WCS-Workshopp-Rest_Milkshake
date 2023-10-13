@@ -2,13 +2,11 @@ package com.wildcodeschool.springmilkshake.controller;
 
 import com.wildcodeschool.springmilkshake.entity.Recipe;
 import com.wildcodeschool.springmilkshake.repository.RecipeRepository;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
-@Controller
+@RestController
 public class RecipeCrudController {
     private final RecipeRepository recipeRepository;
 
@@ -17,36 +15,32 @@ public class RecipeCrudController {
     }
 
     @GetMapping("/recipe")
-    public String getRecipe(Model model,
-                            @RequestParam(required = false) Long id) {
-        Recipe recipe = new Recipe();
-        if (id != null) {
-            Optional<Recipe> optionalRecipe = recipeRepository.findById(id);
-            if (optionalRecipe.isPresent()) {
-                recipe = optionalRecipe.get();
-            }
-        }
-        model.addAttribute("recipe", recipe);
-
-        return "recipe";
+    public List<Recipe> index() {
+        return recipeRepository.findAll();
     }
 
-    @GetMapping("/recipes")
-    public String getAll(Model model) {
-        model.addAttribute("recipes", recipeRepository.findAll());
-
-        return "recipes";
+    @GetMapping("/recipe/{id}")
+    public Recipe show(@PathVariable Long id) {
+        return recipeRepository.findById(id).get();
     }
 
     @PostMapping("/recipe")
-    public String postRecipe(@ModelAttribute Recipe recipe) {
-        recipeRepository.save(recipe);
-        return "redirect:/recipes";
+    public Recipe create(@RequestBody Recipe recipe){
+        return recipeRepository.save(recipe);
     }
 
-    @PostMapping("/recipe/delete")
-    public String deleteRecipe(@ModelAttribute Long id) {
+    @PutMapping("/recipe/{id}")
+    public Recipe update(@PathVariable Long id, @RequestBody Recipe recipe){
+        Recipe recipeToUpdate = recipeRepository.findById(id).get();
+        recipeToUpdate.setName(recipe.getName());
+        recipeToUpdate.setQuantity(recipe.getQuantity());
+        recipeToUpdate.setMainIngredient(recipe.getMainIngredient());
+        return recipeRepository.save(recipeToUpdate);
+    }
+
+    @DeleteMapping("recipe/{id}")
+    public boolean delete(@PathVariable Long id){
         recipeRepository.deleteById(id);
-        return "redirect:/recipes";
+        return true;
     }
 }

@@ -3,13 +3,9 @@ package com.wildcodeschool.springmilkshake.controller;
 import com.wildcodeschool.springmilkshake.entity.Seller;
 import com.wildcodeschool.springmilkshake.repository.SellerRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
 @Controller
 public class SellerCrudController {
@@ -21,41 +17,32 @@ public class SellerCrudController {
     }
 
     @GetMapping("/seller")
-    public String getSeller(Model model,
-                            @RequestParam(required = false) Long id) {
-
-        Seller seller = new Seller();
-        if (id != null) {
-            Optional<Seller> optionalSeller = sellerRepository.findById(id);
-            if (optionalSeller.isPresent()) {
-                seller = optionalSeller.get();
-            }
-        }
-        model.addAttribute("seller", seller);
-
-        return "seller";
+    public List<Seller> index(){
+        return sellerRepository.findAll();
     }
 
-    @GetMapping("/sellers")
-    public String getAll(Model model) {
-
-        model.addAttribute("sellers", sellerRepository.findAll());
-
-        return "sellers";
+    @GetMapping("/seller/{id}")
+    public Seller show(@PathVariable Long id){
+        return sellerRepository.findById(id).get();
     }
 
     @PostMapping("/seller")
-    public String postSeller(@ModelAttribute Seller seller) {
-
-        sellerRepository.save(seller);
-        return "redirect:/sellers";
+    public Seller create(@RequestBody Seller seller){
+        return sellerRepository.save(seller);
     }
 
-    @GetMapping("/seller/delete")
-    public String deleteSeller(@RequestParam Long id) {
+    @PutMapping("/seller/{id}")
+    public Seller update(@PathVariable Long id, @RequestBody Seller seller){
+        Seller sellerToUpdate = sellerRepository.findById(id).get();
+        sellerToUpdate.setName(seller.getName());
+        sellerToUpdate.setAge(seller.getAge());
+        return sellerRepository.save(sellerToUpdate);
+    }
 
+    @DeleteMapping("seller/{id}")
+    public boolean delete(@PathVariable long id){
         sellerRepository.deleteById(id);
-
-        return "redirect:/sellers";
+        return true;
     }
+
 }
